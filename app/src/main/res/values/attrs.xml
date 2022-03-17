@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="TokenButton">
+        <attr name="buttonName" format="string" />
+        <attr name="status" format="enum">
+            <enum name="ready_to_release" value="1" />
+            <enum name="token_running" value="2" />
+            <enum name="token_finished" value="3" />
+            <enum name="access_running" value="4" />
+            <enum name="access_finished" value="5" />
+        </attr>
+        <attr name="tokenStyle" format="enum">
+            <enum name="push_button" value="1" />
+            <enum name="speedometer" value="2" />
+        </attr>
+        <attr name="countdownTokenTimer" format="float" />
+        <attr name="countdownAccessTimer" format="float" />
+    </declare-styleable>
+</resources>
