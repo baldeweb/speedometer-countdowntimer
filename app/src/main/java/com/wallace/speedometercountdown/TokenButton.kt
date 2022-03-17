@@ -3,6 +3,7 @@ package com.wallace.speedometercountdown
 import android.content.Context
 import android.os.CountDownTimer
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -18,6 +19,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 class TokenButton(context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
 
@@ -41,39 +47,36 @@ class TokenButton(context: Context, attrs: AttributeSet?) : ConstraintLayout(con
         )
 
         binding.pbrCountdown.max = 75
-        runProgress()
 
         attributes.recycle()
     }
 
-    private fun runProgress() {
+    private fun runProgress(
+        minutesLimit: Long,
+        minutesTick: Long
+    ) {
         CoroutineScope(Dispatchers.Main).launch {
-            var progress = 0
-            var pointerRotation = 0F
-            while (progress <= 55) {
-                delay(50)
-                binding.pbrCountdown.progress = progress
-                binding.imvPointer.rotation = pointerRotation
-
-                progress += 1
-                pointerRotation += 4.8F
+            val progress = ((minutesLimit - minutesTick).toDouble() / minutesLimit.toDouble())
+            if (progress <= 0.56) {
+                binding.pbrCountdown.progress = ceil(progress * 100).roundToInt()
+                binding.imvPointer.rotation = ceil(progress * 480).toFloat()
             }
-            Toast.makeText(context, "Finalizou", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun startCountdown(
         durationInMinutes: Long,
-        intervalInSeconds: Long,
-        onFinish: () -> Unit
+        intervalInSeconds: Long
     ) {
-        mCountDownTimer = object : CountDownTimer(durationInMinutes, intervalInSeconds) {
-            override fun onTick(millisUntilFinished: Long) {
+        val millisecondsLimit = TimeUnit.MINUTES.toMillis(durationInMinutes)
 
+        mCountDownTimer = object : CountDownTimer(millisecondsLimit, intervalInSeconds) {
+            override fun onTick(millisUntilFinished: Long) {
+                runProgress(millisecondsLimit, millisUntilFinished)
             }
 
             override fun onFinish() {
-                onFinish.invoke()
+                stopCountdownTimer()
             }
         }.start()
     }
@@ -132,16 +135,12 @@ class TokenButton(context: Context, attrs: AttributeSet?) : ConstraintLayout(con
 
     fun startCountdownTokenTimer(timeInMillis: Long) {
         setTokenButtonStyle()
-        startCountdown(timeInMillis, 100) {
-
-        }
+        startCountdown(timeInMillis, 100)
     }
 
     fun startCountdownAccessTimer(timeInMillis: Long) {
         setAccessTimerStyle()
-        startCountdown(timeInMillis, 100) {
-
-        }
+        startCountdown(timeInMillis, 1000)
     }
 
     fun stopCountdownTimer() {
